@@ -28,7 +28,9 @@ app.use(express.static("public"));
 
 // Connect to the Mongo DB
 // If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/FoxHeadlines";
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/BizNews";
+//var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/FoxHeadlines";
+
 mongoose.connect(MONGODB_URI, function(err) {
   if (err)
   console.log(err);
@@ -40,23 +42,36 @@ mongoose.connect(MONGODB_URI, function(err) {
 app.get("/scrape", function(req, res) {
   // First, we grab the body of the html with axios
 //  axios.get("http://www.echojs.com/").then(function(response) {
-  axios.get("http://www.foxnews.com/").then(function(response) {
+  axios.get("https://www.bizjournals.com/atlanta/news/").then(function(response) {
+//  axios.get("http://www.foxnews.com/").then(function(response) {
+
 //    console.log(response);
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(response.data);
 
     // Now, we grab every h2 within an article tag, and do the following:
-    $("article h2").each(function(i, element) {
+    $("a.item--flag").each(function(i, element) {
+//    $("article h2").each(function(i, element) {
+
       // Save an empty result object
       var result = {};
 
       // Add the text and href of every link, and save them as properties of the result object
+
       result.title = $(this)
-        .children("a")
+        .children("div.item__body")
+        .children("h3")
         .text();
       result.link = $(this)
-        .children("a")
         .attr("href");
+
+
+      // result.title = $(this)
+      //   .children("a")
+      //   .text();
+      // result.link = $(this)
+      //   .children("a")
+      //   .attr("href");
 
       // Create a new Article using the `result` object built from scraping
       db.Article.create(result)
@@ -124,6 +139,31 @@ app.post("/articles/:id", function(req, res) {
       // If an error occurred, send it to the client
       res.json(err);
     });
+});
+
+// Route for deleting an Article's associated Note
+app.delete("/notes/delete/:note_id/:article_id", function(req, res) {
+  // Using the note and article id passed in the id parameters, delete the requested note.
+db.Note.findOneAndDelete({id: req.params.note_id}, function(err) {
+  // if error then return
+  if (err) {
+//      console.log(err);
+    res.send(err);
+  }
+  else {
+    // if note removed from article then need to remove note rerference from the article
+    db.Article.findOneAndUpdate({ _id: req.params.article_id }, 
+      {$pull: {note: req.params.note_id}})
+      .exec(function(err, resp) {
+        if (err) {
+          console.log(err);
+          res.send(err);
+        } else {
+          res.send(resp);
+        }
+      });
+  }
+});
 });
 
 // Start the server
