@@ -158,7 +158,7 @@ function viewSaved() {
   $.getJSON("/saveArticle", function(data) {
       $("#articles").hide();
       $("#infoHeader").empty();
-      $("#infoHeader").append("<span class='d-block p-2 bg-primary text-white'>Saved articles displayed below - Click Delete Article button to remove</span>");
+      $("#infoHeader").append("<span class='d-block p-2 bg-primary text-white'>Saved articles displayed below - Click Remove Article button to remove</span>");
       $("#savedArticles").show();
       $("#savedArticles").empty();
     // loop thru saved articles
@@ -167,7 +167,7 @@ function viewSaved() {
       $("#savedArticles").append("<div class='row'> <div class='col-sm-12'><h3 class='articleTitle' data-id='" + data[i]._id + "'>" + data[i].title + "<br />" +  "</h3></div>" + "<br>" +
       "<a class='btn btn-info' href='" + linkRef + data[i].link + "' target='_blank' role='button'>" + "View Article" + '</a>' +
         "<button class='btn btn-primary ml-2 view-notes' type='button' data-target='#noteModal' data-toggle='modal' data-id='" + data[i]._id + "'>" + "View Notes" + "</button>" +
-        "<button class='btn btn-danger ml-2 delete-article' type='submit' data-id='" + data[i]._id + "'>" + "Delete Article" + "</button></div></div>"  + "<hr>" + "<br>"
+        "<button class='btn btn-danger ml-2 delete-article' type='submit' data-id='" + data[i]._id + "'>" + "Remove Article" + "</button></div></div>"  + "<hr>" + "<br>"
         );
     } 
   });
