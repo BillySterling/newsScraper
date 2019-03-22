@@ -8,10 +8,19 @@ function getJson() {
     // For each one
       for (var i = 0; i < data.length; i++) {
         // Display the information on the page
+        if (data[i].saved) {
+          var btnText = "SAVED";
+          var btnFunct = "btn-static";
+          var btnClik = "disabled";
+        } else {
+          var btnText = "Save Article";
+          var btnFunct = "btn-primary";
+          var btnClik = ""; 
+        }
         $("#articles").append("<div class='row'> <div class='col-sm-12'><h3 class='articleTitle' data-id='" + data[i]._id + "'>" + data[i].title + "<br />" +  "</h3></div>" + "<br>" +
         "<a class='btn btn-info' href='" + linkRef + data[i].link + "' target='_blank' role='button'>" + "View Article" + '</a>' +
           "<button class='btn btn-primary ml-2 view-notes' type='button' data-target='#noteModal' data-toggle='modal' data-id='" + data[i]._id + "'>" + "View Notes" + "</button>" +
-          "<button class='btn btn-primary ml-2 save-article' type='submit' data-id='" + data[i]._id + "'>" + "Save Article" + "</button></div></div>"  + "<hr>" + "<br>"
+          "<button class='btn " + btnFunct + " ml-2 save-article' type='submit' " + btnClik + " data-id='" + data[i]._id + "'>" + btnText + "</button></div></div>"  + "<hr>" + "<br>"
         );
       }
   });
@@ -83,6 +92,7 @@ $(document).on("click", ".save-article", function() {
     .then(function(data) {
     console.log("ARTICLE SAVED: " + data);
     });
+  location.reload();
 });
 
 // delete article button
@@ -97,7 +107,6 @@ $(document).on("click", ".delete-article", function() {
     .then(function(data) {
   viewSaved();
   $("#savedArticles").show();
-  //location.reload();
     });
 });
 
@@ -148,11 +157,8 @@ function viewSaved() {
   console.log("======= VIEW SAVED ARTICLE BUTTON CLICKED =======");
   $.getJSON("/saveArticle", function(data) {
       $("#articles").hide();
-
       $("#infoHeader").empty();
       $("#infoHeader").append("<span class='d-block p-2 bg-primary text-white'>Saved articles displayed below - Click Delete Article button to remove</span>");
-
-
       $("#savedArticles").show();
       $("#savedArticles").empty();
     // loop thru saved articles
@@ -172,7 +178,6 @@ $("#view-all").on("click", function() {
   console.log("======= VIEW ALL ARTICLES BUTTON CLICKED =======");
   // hide saved articles and...
     $("#savedArticles").hide();
-        // display headlines again
-      $("#articles").show();
-    getJson();
+    // display headlines again
+    location.reload();
 });
