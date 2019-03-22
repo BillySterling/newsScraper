@@ -29,35 +29,18 @@ app.use(express.static("public"));
 // Connect to the Mongo DB
 // If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/BizNews";
-//var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/FoxHeadlines";
 
-mongoose.connect(MONGODB_URI, function(err) {
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true }, function(err) {
   if (err)
   console.log(err);
 });
 
-// Routes
-
 // A GET route for scraping the news website
 app.get("/scrape", function(req, res) {
-  // First, we grab the body of the html with axios
-//  axios.get("http://www.echojs.com/").then(function(response) {
   axios.get("https://www.bizjournals.com/atlanta/news/").then(function(response) {
-//  axios.get("http://www.foxnews.com/").then(function(response) {
-
-//    console.log(response);
-    // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(response.data);
-
-    // Now, we grab every h2 within an article tag, and do the following:
     $("a.item--flag").each(function(i, element) {
-//    $("article h2").each(function(i, element) {
-
-      // Save an empty result object
       var result = {};
-
-      // Add the text and href of every link, and save them as properties of the result object
-
       result.title = $(this)
         .children("div.item__body")
         .children("h3")
@@ -65,27 +48,14 @@ app.get("/scrape", function(req, res) {
       result.link = $(this)
         .attr("href");
 
-
-      // result.title = $(this)
-      //   .children("a")
-      //   .text();
-      // result.link = $(this)
-      //   .children("a")
-      //   .attr("href");
-
-      // Create a new Article using the `result` object built from scraping
       db.Article.create(result)
         .then(function(dbArticle) {
-          // View the added result in the console
           console.log(dbArticle);
         })
         .catch(function(err) {
-          // If an error occurred, log it
           console.log(err);
         });
     });
-
-    // Send a message to the client
     res.send("******** Scrape Complete ********");
   });
 });
@@ -94,79 +64,154 @@ app.get("/scrape", function(req, res) {
 app.get("/articles", function(req, res) {
   // Grab every document in the Articles collection - include notes
   db.Article.find({})
-    .populate("note")
-    .then(function(dbArticle) {
-      // If we were able to successfully find Articles, send them back to the client
-      res.json(dbArticle);
-    })
-    .catch(function(err) {
-      // If an error occurred, send it to the client
-      res.json(err);
-    });
+  .populate("note")
+  .then(function(dbArticle) {
+    res.json(dbArticle);
+  })
+  .catch(function(err) {
+    res.json(err);
+  });
 });
 
 // Route for grabbing a specific Article by id, populate it with it's note
 app.get("/articles/:id", function(req, res) {
-  // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
   db.Article.findOne({ _id: req.params.id })
-    // ..and populate all of the notes associated with it
-    .populate("note")
-    .then(function(dbArticle) {
-      // If we were able to successfully find an Article with the given id, send it back to the client
-      res.json(dbArticle);
-    })
-    .catch(function(err) {
-      // If an error occurred, send it to the client
-      res.json(err);
-    });
+  // ..and populate all of the notes associated with it
+  .populate("note")
+  .then(function(dbArticle) {
+    res.json(dbArticle);
+  })
+  .catch(function(err) {
+    res.json(err);
+  });
 });
 
 // Route for saving/updating an Article's associated Note
 app.post("/articles/:id", function(req, res) {
-  // Create a new note and pass the req.body to the entry
   db.Note.create(req.body)
-    .then(function(dbNote) {
-      // If a Note was created successfully, find one Article with an `_id` equal to `req.params.id`. Update the Article to be associated with the new Note
-      // { new: true } tells the query that we want it to return the updated User -- it returns the original by default
-      // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
-      return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: dbNote._id }, { new: true });
-    })
-    .then(function(dbArticle) {
-      // If we were able to successfully update an Article, send it back to the client
-      res.json(dbArticle);
-    })
-    .catch(function(err) {
-      // If an error occurred, send it to the client
-      res.json(err);
-    });
+  .then(function(dbNote) {
+    // If a Note was created successfully, find one Article with an `_id` equal to `req.params.id`. Update the Article to be associated with the new Note
+    // { new: true } tells the query that we want it to return the updated User -- it returns the original by default
+    // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
+    // return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: dbNote._id }, { new: true });
+    return db.Article.findOneAndUpdate({ _id: req.params.id },
+      { $push: { note: dbNote._id } }, { upsert: true });
+  })
+  .then(function(dbArticle) {
+    res.json(dbArticle);
+  })
+  .catch(function(err) {
+    res.json(err);
+  });
 });
 
 // Route for deleting an Article's associated Note
-app.delete("/notes/delete/:note_id/:article_id", function(req, res) {
-  // Using the note and article id passed in the id parameters, delete the requested note.
-db.Note.findOneAndDelete({id: req.params.note_id}, function(err) {
-  // if error then return
-  if (err) {
-//      console.log(err);
-    res.send(err);
-  }
-  else {
-    // if note removed from article then need to remove note rerference from the article
-    db.Article.findOneAndUpdate({ _id: req.params.article_id }, 
-      {$pull: {note: req.params.note_id}})
-      .exec(function(err, resp) {
-        if (err) {
-          console.log(err);
+// app.delete("/notes/delete/:note_id/:article_id", function(req, res) {
+//   debugger;
+//   // Using the note and article id passed in the id parameters, delete the requested note.
+// db.Note.findOneAndDelete({id: req.params.note_id}, function(err) {
+//   if (err) {
+//     res.send(err);
+//   }
+//   else {
+//     // if note removed from article then need to remove note rerference from the article
+//     db.Article.findOneAndUpdate({ _id: req.params.article_id }, 
+//       {$pull: {note: req.params.note_id}})
+//       .exec(function(err, resp) {
+//         if (err) {
+//           console.log(err);
+//           res.send(err);
+//         } else {
+//           res.send(resp);
+//         }
+//       });
+//     }
+//   });
+// });
+
+// app.delete("/notes/delete/:note_id/:article_id", function(req, res) {
+//   console.log("~~~~~~~~~ DELETE NOTE ~~~~~~~~~");
+//   // Using the note and article id passed in the id parameters, delete the requested note.  if note removed from article then need to remove note rerference from the article
+//   db.Article.findOneAndUpdate({ _id: req.params.article_id }, 
+//     {$pull: {note: req.params.note_id}})
+//   //  .exec(function(err, resp) {
+//     .then(function(err, resp) {
+//       console.log("DELETE NOTE KEY IN ARTICLE RESP: " + resp);
+//       if (err) {
+//         console.log("DELETE NOTE KEY ERROR IN ARTICLE: " + err);
+//         res.send(err);
+//       } else {
+//       // db.Note.findOneAndDelete({id: req.params.note_id}, function(err, response) {
+//       db.Note.deleteOne({id: req.params.note_id}, function(err, response) {
+
+//         console.log("DELETE NOTE RESP: " + response);
+//         if (err) {
+//           console.log("DELETE NOTE ERROR: " + err);
+//           res.send(err);
+//           }
+//         });
+//       }
+//     });
+// });
+
+
+
+app.post("/notes/delete/:note_id/:article_id", function(req, res) {
+  console.log("~~~~~~~~~ DELETE NOTE ~~~~~~~~~");
+  // Using the note and article id passed in the id parameters, delete the requested note.  if note removed from article then need to remove note rerference from the article
+  db.Article.findOneAndUpdate({ _id: req.params.article_id }, 
+    {$pull: {note: req.params.note_id}}, function(err) {
+      if (err) {
+        console.log("ARTICLE UPDATE ERROR: " + err);
+            res.send(err);
+          }
+      })
+    .exec();
+
+  db.Note.deleteOne({_id: req.params.note_id}, function(err) {
+    if (err) {
+      console.log("DELETE NOTE ERROR: " + err);
           res.send(err);
-        } else {
-          res.send(resp);
         }
-      });
-  }
+    });
+  });
+
+
+
+
+// Route for saving an article
+app.post("/saveArticle/:id", function(req, res) {
+  db.Article.findOneAndUpdate({_id: req.params.id}, 
+    {$set: {saved: true}})
+  .then(function(dbArticle) {
+      res.json(dbArticle);
+  });
 });
+
+// Route for getting all saved articles
+app.get("/saveArticle", function(req, res) {
+db.Article.find({saved: true}).populate("note")
+  .then(function(dbArticle) {
+   res.json(dbArticle);
+  })
+  .catch(function(err) {
+    res.json(err);
+  });
+});
+
+// Route to delete a saved article
+app.post("/deleteSaved/:id", function(req, res) {
+ db.Article.findOneAndUpdate({_id: req.params.id}, 
+  {$set: {saved: false}})
+  .then(function(dbArticle) {
+      res.json(dbArticle);
+  })
+  .catch(function(err) {
+      res.json(err);
+  });
 });
 
 // Start the server
 app.listen(PORT, function() {
-  console.log("App running on port " + PORT + "!");
+  console.log("App running on port " + PORT);
 });

@@ -1,0 +1,18 @@
+.jumbotron {
+    background-image: url(./NEWSPAPER.jpg);
+    text-align: center;
+}
+
+.display-3 {
+    color: #0d79f3;
+}
+
+.noteText {
+    font-size: 14pt;
+}
+#newNote {
+    white-space: pre;
+}
+#wrapper {
+    margin: 100px;
+}
