@@ -11,7 +11,7 @@ var cheerio = require("cheerio");
 // Require all models
 var db = require("./models");
 
-var PORT = 3000;
+var PORT = process.env.PORT || 3000;
 
 // Initialize Express
 var app = express();
@@ -35,129 +35,12 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true }, function(err) {
   console.log(err);
 });
 
-// A GET route for scraping the news website
-app.get("/scrape", function(req, res) {
-  axios.get("https://www.bizjournals.com/atlanta/news/").then(function(response) {
-    var $ = cheerio.load(response.data);
-    $("a.item--flag").each(function(i, element) {
-      var result = {};
-      result.title = $(this)
-        .children("div.item__body")
-        .children("h3")
-        .text();
-      result.link = $(this)
-        .attr("href");
-      db.Article.create(result)
-        .then(function(dbArticle) {
-          console.log(dbArticle);
-        })
-        .catch(function(err) {
-          console.log(err);
-        });
-    });
-    res.send("******** Scrape Complete ********");
-  });
-});
+//Routes
+require("./routes/api-routes.js")(app);
+require("./routes/html-routes.js")(app);
 
-// Route for getting all Articles from the db
-app.get("/articles", function(req, res) {
-  // Grab every document in the Articles collection - include notes
-  db.Article.find({})
-  .populate("note")
-  .then(function(dbArticle) {
-    res.json(dbArticle);
-  })
-  .catch(function(err) {
-    res.json(err);
-  });
-});
 
-// Route for retrieving a specific Article by id, populate it with its note
-app.get("/articles/:id", function(req, res) {
-  db.Article.findOne({ _id: req.params.id })
-  // ..and populate all of the notes associated with it
-  .populate("note")
-  .then(function(dbArticle) {
-    res.json(dbArticle);
-  })
-  .catch(function(err) {
-    res.json(err);
-  });
-});
 
-// Route for saving/updating an Article's associated Note
-app.post("/articles/:id", function(req, res) {
-  db.Note.create(req.body)
-  .then(function(dbNote) {
-    // If a Note was created successfully, find one Article with an `_id` equal to `req.params.id`. Update the Article to be associated with the new Note
-    // { new: true } tells the query that we want it to return the updated User -- it returns the original by default
-    // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
-    return db.Article.findOneAndUpdate({ _id: req.params.id },
-      { $push: { note: dbNote._id } }, { upsert: true });
-  })
-  .then(function(dbArticle) {
-    res.json(dbArticle);
-  })
-  .catch(function(err) {
-    res.json(err);
-  });
-});
-
-app.post("/notes/delete/:note_id/:article_id", function(req, res) {
-  console.log("~~~~~~~~~ DELETE NOTE ~~~~~~~~~");
-  // Using the note and article id passed in the id parameters, delete the requested note.  if note removed from article then need to remove note rerference from the article
-  db.Article.findOneAndUpdate({ _id: req.params.article_id }, 
-    {$pull: {note: req.params.note_id}}, function(err) {
-      if (err) {
-        console.log("ARTICLE UPDATE ERROR: " + err);
-            res.send(err);
-          }
-      })
-    .exec();
-  db.Note.deleteOne({_id: req.params.note_id})
-    .then(function(dbNote) {
-      res.json(dbNote);
-     })
-     .catch(function(err) {
-       res.json(err);
-       console.log("DELETE NOTE ERROR: " + err);
-    });
-  });
-
-app.post("/saveArticle/:id", function(req, res) {
-  db.Article.findOneAndUpdate({_id: req.params.id}, 
-    {$set: {saved: true}})
-  .then(function(dbArticle) {
-      res.json(dbArticle);
-  })
-  .catch(function(err) {
-    res.json(err);
-    console.log("SAVE ARTICLE ERROR: " + err);
- });
-});
-
-// Route for getting all saved articles
-app.get("/saveArticle", function(req, res) {
-db.Article.find({saved: true}).populate("note")
-  .then(function(dbArticle) {
-   res.json(dbArticle);
-  })
-  .catch(function(err) {
-    res.json(err);
-  });
-});
-
-// Route to delete a saved article
-app.post("/deleteSaved/:id", function(req, res) {
- db.Article.findOneAndUpdate({_id: req.params.id}, 
-  {$set: {saved: false}})
-  .then(function(dbArticle) {
-      res.json(dbArticle);
-  })
-  .catch(function(err) {
-      res.json(err);
-  });
-});
 
 // Start the server
 app.listen(PORT, function() {
