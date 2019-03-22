@@ -34,51 +34,26 @@ $(document).on("click", ".view-notes", function() {
       method: "GET",
       url: "/articles/" + thisId
     })
-    .done(function(data) {
-
-      // console.log(data);
-      // $("#noteModal").modal("show");
-      // $("#newNote").append("<h6>Enter new note title and note below</h6>Note Title: <input id='title-input' name='title'></input>" + "<br>Note Text:  <textarea id='body-input' name='body'></textarea>" + "<br>");
-      // $("#saveBtn").append("<button data-id='" + data._id + "' class='save-note btn btn-primary'>Save Note</button>");
-      // // display note(s) if any saved
-      // if (data.note.length != 0) {
-      // for (var i = 0; i < data.note.length; i++) {
-      //   $("#notes").append(
-      //     "<h6>" + data.note[i].title + "</h6>" +
-      //     "<p class='noteText'>" + data.note[i].body + "</p>" +
-      //     "<button data-id='" + data.note[i]._id + "' articleId='" + thisId + "' class='delete-note btn btn-danger'>Delete Note</button>" + "<br>" + "<hr>"
-      //     );
-      //   }
-      // }
-      // else {
-      //   $("#notes").append("There are currently no notes for this article" + "<br>" + "<br>");
-      //   }
-      getNotes(data);
+    .then(function(data) {
+      console.log(data);
+      $("#noteModal").modal("show");
+      $("#newNote").append("<h6>Enter new note title and note below</h6>Note Title: <input id='title-input' name='title'></input>" + "<br>Note Text:  <textarea id='body-input' name='body'></textarea>" + "<br>");
+      $("#saveBtn").append("<button data-id='" + data._id + "' class='save-note btn btn-primary'>Save Note</button>");
+      // display note(s) if any saved
+      if (data.note.length != 0) {
+      for (var i = 0; i < data.note.length; i++) {
+        $("#notes").append(
+          "<h6>" + data.note[i].title + "</h6>" +
+          "<p class='noteText'>" + data.note[i].body + "</p>" +
+          "<button data-id='" + data.note[i]._id + "' articleId='" + thisId + "' class='delete-note btn btn-danger'>Delete Note</button>" + "<br>" + "<hr>"
+          );
+        }
+      }
+      else {
+        $("#notes").append("There are currently no notes for this article" + "<br>" + "<br>");
+        }
     });
 });
-
-
-function getNotes(data) {
-  console.log(data);
-  $("#noteModal").modal("show");
-  $("#newNote").append("<h6>Enter new note title and note below</h6>Note Title: <input id='title-input' name='title'></input>" + "<br>Note Text:  <textarea id='body-input' name='body'></textarea>" + "<br>");
-  $("#saveBtn").append("<button data-id='" + data._id + "' class='save-note btn btn-primary'>Save Note</button>");
-  // display note(s) if any saved
-  if (data.note.length != 0) {
-  for (var i = 0; i < data.note.length; i++) {
-    $("#notes").append(
-      "<h6>" + data.note[i].title + "</h6>" +
-      "<p class='noteText'>" + data.note[i].body + "</p>" +
-      "<button data-id='" + data.note[i]._id + "' articleId='" + thisId + "' class='delete-note btn btn-danger'>Delete Note</button>" + "<br>" + "<hr>"
-    );
-  }
-  }
-  else {
-    $("#notes").append("There are currently no notes for this article" + "<br>" + "<br>");
-  };
-};
-
-
 
  // scrape articles button
  $(document).on("click", "#scrape", function() {
@@ -88,7 +63,7 @@ $("#articles").empty();
   $.ajax({
     method: "GET",
     url: "/scrape"
-  }).done(function(data) {
+  }).then(function(data) {
     console.log(data);
   location.reload();
   });    
@@ -98,13 +73,12 @@ $("#articles").empty();
 $(document).on("click", ".save-article", function() {
   console.log("======= SAVE ARTICLE BUTTON CLICKED =======");
   var thisId = $(this).attr("data-id");
-
   // POST the article
   $.ajax({
       method: "POST",
       url: "/saveArticle/" + thisId,
     })
-    .done(function(data) {
+    .then(function(data) {
     console.log("ARTICLE SAVED: " + data);
     });
 });
@@ -118,7 +92,7 @@ $(document).on("click", ".delete-article", function() {
       method: "POST",
       url: "/deleteSaved/" + thisId,
     })
-    .done(function(data) {
+    .then(function(data) {
   viewSaved();
   $("#savedArticles").show();
   //location.reload();
@@ -130,7 +104,6 @@ $(document).on("click", ".save-note", function() {
   console.log("======= SAVE NOTE BUTTON CLICKED =======");
   // get article id from button id
   var thisId = $(this).attr("data-id");
-
   // POST the note
   $.ajax({
       method: "POST",
@@ -140,30 +113,28 @@ $(document).on("click", ".save-note", function() {
         body: $("#body-input").val()
       }
     })
-    .done(function(data) {
+    .then(function(data) {
       $("#notes").empty();
     });
-
   // reset note input and textarea and hide the modal
   $("#title-input").val("");
   $("#body-input").val("");
   $("#noteModal").modal("hide");
 });
 
+// delete note button clicked (in modal)
 $(document).on("click", ".delete-note", function() {
   var thisId = $(this).attr("data-id");
   var articleId = $(this).attr("articleId");
   console.log("========== DELETE NOTE CLICKED: " + thisId + " " + articleId);
   $.ajax({
       method: "POST",
-      url: "/notes/delete/" + thisId + "/" + articleId,
+      url: "/notes/delete/" + thisId + "/" + articleId
     })
-    .done(function(data) { 
-    console.log("DELETE SUCCESSFUL! " + data);
-    getNotes(data);
+    .then(function(data) { 
+      console.log("DELETE SUCCESSFUL! " + data);
     });
-  // $("#noteModal").modal("hide");
-  
+   $("#noteModal").modal("hide");
 });
 
 // view saved button

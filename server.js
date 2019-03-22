@@ -105,57 +105,6 @@ app.post("/articles/:id", function(req, res) {
   });
 });
 
-// Route for deleting an Article's associated Note
-// app.delete("/notes/delete/:note_id/:article_id", function(req, res) {
-//   debugger;
-//   // Using the note and article id passed in the id parameters, delete the requested note.
-// db.Note.findOneAndDelete({id: req.params.note_id}, function(err) {
-//   if (err) {
-//     res.send(err);
-//   }
-//   else {
-//     // if note removed from article then need to remove note rerference from the article
-//     db.Article.findOneAndUpdate({ _id: req.params.article_id }, 
-//       {$pull: {note: req.params.note_id}})
-//       .exec(function(err, resp) {
-//         if (err) {
-//           console.log(err);
-//           res.send(err);
-//         } else {
-//           res.send(resp);
-//         }
-//       });
-//     }
-//   });
-// });
-
-// app.delete("/notes/delete/:note_id/:article_id", function(req, res) {
-//   console.log("~~~~~~~~~ DELETE NOTE ~~~~~~~~~");
-//   // Using the note and article id passed in the id parameters, delete the requested note.  if note removed from article then need to remove note rerference from the article
-//   db.Article.findOneAndUpdate({ _id: req.params.article_id }, 
-//     {$pull: {note: req.params.note_id}})
-//   //  .exec(function(err, resp) {
-//     .then(function(err, resp) {
-//       console.log("DELETE NOTE KEY IN ARTICLE RESP: " + resp);
-//       if (err) {
-//         console.log("DELETE NOTE KEY ERROR IN ARTICLE: " + err);
-//         res.send(err);
-//       } else {
-//       // db.Note.findOneAndDelete({id: req.params.note_id}, function(err, response) {
-//       db.Note.deleteOne({id: req.params.note_id}, function(err, response) {
-
-//         console.log("DELETE NOTE RESP: " + response);
-//         if (err) {
-//           console.log("DELETE NOTE ERROR: " + err);
-//           res.send(err);
-//           }
-//         });
-//       }
-//     });
-// });
-
-
-
 app.post("/notes/delete/:note_id/:article_id", function(req, res) {
   console.log("~~~~~~~~~ DELETE NOTE ~~~~~~~~~");
   // Using the note and article id passed in the id parameters, delete the requested note.  if note removed from article then need to remove note rerference from the article
@@ -167,17 +116,15 @@ app.post("/notes/delete/:note_id/:article_id", function(req, res) {
           }
       })
     .exec();
-
-  db.Note.deleteOne({_id: req.params.note_id}, function(err) {
-    if (err) {
-      console.log("DELETE NOTE ERROR: " + err);
-          res.send(err);
-        }
+  db.Note.deleteOne({_id: req.params.note_id})
+    .then(function(dbNote) {
+      res.json(dbNote);
+     })
+     .catch(function(err) {
+       res.json(err);
+       console.log("DELETE NOTE ERROR: " + err);
     });
   });
-
-
-
 
 // Route for saving an article
 app.post("/saveArticle/:id", function(req, res) {
