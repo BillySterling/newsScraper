@@ -28,6 +28,8 @@ In order to run this application locally you will need to install the following 
 
 ## Usage
 
+Application deployed on [Heroku](https://intense-sea-39339.herokuapp.com/)
+
 ### In the header section:
 
 
