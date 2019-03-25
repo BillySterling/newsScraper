@@ -17,9 +17,6 @@ module.exports = function(app) {
             result.link = $(this)
             .attr("href");
             db.Article.create(result)
-            .then(function(dbArticle) {
-                console.log(dbArticle);
-            })
             .catch(function(err) {
                 console.log(err);
             });
@@ -93,6 +90,7 @@ module.exports = function(app) {
         });
     });
 
+    // Route save an article
     app.post("/saveArticle/:id", function(req, res) {
     db.Article.findOneAndUpdate({_id: req.params.id}, 
         {$set: {saved: true}})

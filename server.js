@@ -35,6 +35,7 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true }, function(err) {
   if (err)
   console.log(err);
 });
+mongoose.set('useCreateIndex', true);
 
 //Routes
 require("./routes/api-routes.js")(app);

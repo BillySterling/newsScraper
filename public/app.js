@@ -70,14 +70,14 @@ $(document).on("click", ".view-notes", function() {
  $(document).on("click", "#scrape", function() {
   console.log("========= SCRAPE CLICKED =========");
   // clear the display
-$("#articles").empty();
+  $("#articles").empty();
+  $("#articles").append("<div class='spinner-border text-primary' role='status'><span class='sr-only'>Loading...</span></div>")
   $.ajax({
     method: "GET",
     url: "/scrape"
   }).then(function(data) {
-    console.log(data);
-  location.reload();
-  });    
+    location.reload();
+  }); 
 });
 
 // save article button
