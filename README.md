@@ -33,7 +33,7 @@ In order to run this application locally you will need to install the following 
 
 ![newsScraper-1](newsScraper-1.png)
 
-* Click the `Scrape Articles` button to retrieve and scrape the latest headlines.  Once retrieved the articles will populate the body of the page.  It may take several seconds for the scrape to complete.
+* Click the `Scrape Articles` button to retrieve and scrape the latest headlines.  Once retrieved the articles will populate the body of the page.  It may take several seconds for the scrape to complete.  Clicking to scrape again will retrieve the lastest news headline; prior headlines are not deleted.
 
 * The `View Saved Articles` button will display only the articles saved for later reading.
 
