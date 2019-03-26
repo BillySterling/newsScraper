@@ -71,7 +71,7 @@ $(document).on("click", ".view-notes", function() {
   console.log("========= SCRAPE CLICKED =========");
   // clear the display
   $("#articles").empty();
-  $("#articles").append("<div class='spinner-border text-primary' role='status'><span class='sr-only'>Loading...</span></div>")
+  $("#articles").append("<div class='d-flex justify-content-center'><div class='spinner-border text-primary' role='status'><span class='sr-only'>Loading...</span></div>")
   $.ajax({
     method: "GET",
     url: "/scrape"
