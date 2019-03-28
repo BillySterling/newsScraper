@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 var linkRef = "https://www.bizjournals.com/";
 
 function getJson() {
@@ -13,9 +14,9 @@ function getJson() {
           var btnFunct = "btn-static";
           var btnClik = "disabled";
         } else {
-          var btnText = "Save Article";
-          var btnFunct = "btn-primary";
-          var btnClik = ""; 
+          btnText = "Save Article";
+          btnFunct = "btn-primary";
+          btnClik = ""; 
         }
         $("#articles").append("<div class='row'> <div class='col-sm-12'><h3 class='articleTitle' data-id='" + data[i]._id + "'>" + data[i].title + "<br />" +  "</h3></div>" + "<br>" +
         "<a class='btn btn-info' href='" + linkRef + data[i].link + "' target='_blank' role='button'>" + "View Article" + '</a>' +
@@ -31,7 +32,6 @@ getJson();
 
 // view notes button
 $(document).on("click", ".view-notes", function() {
-  console.log("======= VIEW NOTES BUTTON CLICKED =======");
   // Empty the notes from the note section, reset fields
   $("#notes").empty();
   $("#newNote").empty();
@@ -46,7 +46,6 @@ $(document).on("click", ".view-notes", function() {
       url: "/articles/" + thisId
     })
     .then(function(data) {
-      console.log(data);
       $("#noteModal").modal("show");
       $("#newNote").append("<h6>Enter new note title and note below</h6>Note Title: <input id='title-input' name='title'></input>" + "<br>Note Text:  <textarea id='body-input' name='body'></textarea>" + "<br>");
       $("#saveBtn").append("<button data-id='" + data._id + "' class='save-note btn btn-primary'>Save Note</button>");
@@ -68,7 +67,6 @@ $(document).on("click", ".view-notes", function() {
 
  // scrape articles button
  $(document).on("click", "#scrape", function() {
-  console.log("========= SCRAPE CLICKED =========");
   // clear the display
   $("#articles").empty();
   $("#articles").append("<div class='d-flex justify-content-center'><div class='spinner-border text-primary' role='status'><span class='sr-only'>Loading...</span></div>")
@@ -82,16 +80,12 @@ $(document).on("click", ".view-notes", function() {
 
 // save article button
 $(document).on("click", ".save-article", function() {
-  console.log("======= SAVE ARTICLE BUTTON CLICKED =======");
   var thisId = $(this).attr("data-id");
   // POST the article
   $.ajax({
       method: "POST",
       url: "/saveArticle/" + thisId,
     })
-    .then(function(data) {
-    console.log("ARTICLE SAVED: " + data);
-    });
   location.reload();
 });
 
@@ -112,7 +106,6 @@ $(document).on("click", ".delete-article", function() {
 
 // save note button
 $(document).on("click", ".save-note", function() {
-  console.log("======= SAVE NOTE BUTTON CLICKED =======");
   // get article id from button id
   var thisId = $(this).attr("data-id");
   // POST the note
@@ -137,14 +130,10 @@ $(document).on("click", ".save-note", function() {
 $(document).on("click", ".delete-note", function() {
   var thisId = $(this).attr("data-id");
   var articleId = $(this).attr("articleId");
-  console.log("========== DELETE NOTE CLICKED: " + thisId + " " + articleId);
   $.ajax({
       method: "POST",
       url: "/notes/delete/" + thisId + "/" + articleId
     })
-    .then(function(data) { 
-      console.log("DELETE SUCCESSFUL! " + data);
-    });
    $("#noteModal").modal("hide");
 });
 
@@ -154,7 +143,6 @@ $("#view-saved").on("click", function() {
 });
 
 function viewSaved() {
-  console.log("======= VIEW SAVED ARTICLE BUTTON CLICKED =======");
   $.getJSON("/saveArticle", function(data) {
       $("#articles").hide();
       $("#infoHeader").empty();
@@ -171,11 +159,10 @@ function viewSaved() {
         );
     } 
   });
-};
+}
 
 // view all articles button
 $("#view-all").on("click", function() {
-  console.log("======= VIEW ALL ARTICLES BUTTON CLICKED =======");
   // hide saved articles and...
     $("#savedArticles").hide();
     // display headlines again

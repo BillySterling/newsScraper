@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // Require all models
 var db = require('../models');
 var axios = require("axios");
@@ -17,8 +18,13 @@ module.exports = function(app) {
             result.link = $(this)
             .attr("href");
             db.Article.create(result)
+            .then(function(dbArticle) {
+                //View result in console
+                console.log(dbArticle);
+            })
             .catch(function(err) {
-                console.log(err);
+                console.log("CREATE ARTICLE ERROR: " + err)
+                res.send(err);
             });
         });
         res.send("******** Scrape Complete ********");
@@ -34,7 +40,7 @@ module.exports = function(app) {
         res.json(dbArticle);
     })
     .catch(function(err) {
-        res.json(err);
+        res.send(err);
     });
     });
 
@@ -47,7 +53,7 @@ module.exports = function(app) {
         res.json(dbArticle);
     })
     .catch(function(err) {
-        res.json(err);
+        res.send(err);
     });
     });
 
@@ -65,18 +71,16 @@ module.exports = function(app) {
         res.json(dbArticle);
     })
     .catch(function(err) {
-        res.json(err);
+        res.send(err);
     });
     });
 
     app.post("/notes/delete/:note_id/:article_id", function(req, res) {
-    console.log("~~~~~~~~~ DELETE NOTE ~~~~~~~~~");
     // Using the note and article id passed in the id parameters, delete the requested note.  if note removed from article then need to remove note rerference from the article
     db.Article.findOneAndUpdate({ _id: req.params.article_id }, 
         {$pull: {note: req.params.note_id}}, function(err) {
         if (err) {
-            console.log("ARTICLE UPDATE ERROR: " + err);
-                res.send(err);
+            res.send(err);
             }
         })
         .exec();
@@ -85,8 +89,7 @@ module.exports = function(app) {
         res.json(dbNote);
         })
         .catch(function(err) {
-            res.json(err);
-            console.log("DELETE NOTE ERROR: " + err);
+            res.send(err);
         });
     });
 
@@ -98,9 +101,8 @@ module.exports = function(app) {
         res.json(dbArticle);
     })
     .catch(function(err) {
-        res.json(err);
-        console.log("SAVE ARTICLE ERROR: " + err);
-    });
+        res.send(err);
+        });
     });
 
     // Route for getting all saved articles
@@ -110,7 +112,7 @@ module.exports = function(app) {
         res.json(dbArticle);
     })
     .catch(function(err) {
-        res.json(err);
+        res.send(err);
     });
     });
 
@@ -122,7 +124,7 @@ module.exports = function(app) {
         res.json(dbArticle);
     })
     .catch(function(err) {
-        res.json(err);
+        res.send(err);
     });
     });
 
