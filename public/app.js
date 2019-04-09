@@ -5,7 +5,11 @@ function getJson() {
   $.getJSON("/articles", function(data) {
       $("#savedArticles").hide();
       $("#infoHeader").empty();
-      $("#infoHeader").append("<span class='d-block p-2 bg-primary text-white'>Scraped articles displayed below - Click Save Article button to save</span>");
+      if (data.length === 0) {
+        $("#infoHeader").append("<span class='d-block p-2 bg-primary text-white'>No Articles in Database - Click Scrape Articles Button to Retrieve Articles</span>"); 
+      } else {
+        $("#infoHeader").append("<span class='d-block p-2 bg-primary text-white'>Scraped articles displayed below - Click Save Article button to save</span>");
+      }
     // For each one
       for (var i = 0; i < data.length; i++) {
         // Display the information on the page
