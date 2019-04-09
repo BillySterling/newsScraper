@@ -118,7 +118,8 @@ $(document).on("click", ".save-note", function() {
       url: "/articles/" + thisId,
       data: {
         title: $("#title-input").val(),
-        body: $("#body-input").val()
+        body: $("#body-input").val(),
+        createdAt: Date.now()
       }
     })
     .then(function(data) {

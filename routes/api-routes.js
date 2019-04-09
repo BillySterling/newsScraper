@@ -16,7 +16,8 @@ module.exports = function(app) {
             .children("h3")
             .text();
             result.link = $(this)
-            .attr("href");
+            .attr("href")
+            result.createdAt = Date.now()
             db.Article.create(result)
             .then(function(dbArticle) {
                 //View result in console
